@@ -56,12 +56,24 @@ log-analyzer [OPTIONS] <log_path>
    log-analyzer --laravel /path/to/laravel.log --date="2024-08-22" --type="ERROR"
    ```
 
+   Jika terjadi error coba 
+
+   ```bash
+   log-analyzer /path/to/laravel.log --laravel --date="2024-08-22" --type="ERROR"
+   ```
+
    Ini akan menganalisis Laravel log di path yang ditentukan, memfilter entri berdasarkan tanggal `2024-08-22` dan level error `ERROR`.
 
 2. **Menganalisis Apache Log**
 
    ```bash
    log-analyzer --apache /path/to/apache.log --date="2024-08-22" --type="WARN"
+   ```
+   
+   Jika terjadi error coba
+
+   ```bash
+   log-analyzer  /path/to/apache.log --apache --date="2024-08-22" --type="WARN"
    ```
 
    Ini akan menganalisis Apache log, memfilter berdasarkan tanggal dan tipe log `WARN`.
@@ -70,6 +82,12 @@ log-analyzer [OPTIONS] <log_path>
 
    ```bash
    log-analyzer --access /path/to/access.log --status="404" --method="GET"
+   ```
+
+   Jika terjadi error coba 
+
+   ```bash
+   log-analyzer /path/to/access.log --access --status="404" --method="GET"
    ```
 
    Ini akan menganalisis Access log, memfilter hanya entri dengan status HTTP `404` dan metode `GET`.
