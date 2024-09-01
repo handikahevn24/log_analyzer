@@ -1,10 +1,11 @@
 use clap::{Arg, Command}; // Import clap
 use regex::Regex;
-use std::fs::File;
+use std::fs::{File, OpenOptions, create_dir_all};
 use std::io::{BufRead, BufReader};
 use serde::Serialize;
-use std::fs::OpenOptions;
 use std::io::Write;
+use std::path::PathBuf;
+use std::env;
 
 #[derive(Debug, Serialize)]
 pub struct ApacheLogEntry {
@@ -127,8 +128,27 @@ fn print_json<T: Serialize>(results: &T) {
 }
 
 fn write_json_to_file<T: Serialize>(results: &T, file_name: &str) {
-    // Tentukan direktori aman untuk menyimpan file
-    let file_path = format!("/var/log/log_analyzer/{}", file_name);
+    // Tentukan path berdasarkan sistem operasi
+    let file_path = if cfg!(target_os = "windows") {
+        // Windows: Simpan di direktori saat ini
+        let current_dir = env::current_dir().expect("Failed to get current directory");
+        current_dir.join(file_name)
+    } else {
+        // Linux: Simpan di direktori user, misalnya ~/logs
+        let mut user_dir = env::var("HOME").map(PathBuf::from).expect("Failed to get HOME directory");
+        user_dir.push("logs");
+
+        // Buat direktori jika belum ada
+        if !user_dir.exists() {
+            create_dir_all(&user_dir).expect("Failed to create logs directory");
+        }
+
+        user_dir.join(file_name)
+    };
+
+    // Konversi PathBuf ke String untuk menampilkan path
+    let file_path_str = file_path.to_str().expect("Failed to convert path to string");
+
     match serde_json::to_string_pretty(results) {
         Ok(json) => {
             let mut file = OpenOptions::new()
@@ -140,7 +160,7 @@ fn write_json_to_file<T: Serialize>(results: &T, file_name: &str) {
             if let Err(e) = file.write_all(json.as_bytes()) {
                 eprintln!("Failed to write to file: {}", e);
             } else {
-                println!("Output saved to {}", file_path);
+                println!("Output saved to {}", file_path_str);
             }
         }
         Err(e) => eprintln!("Failed to convert to JSON: {}", e),
